@@ -1,88 +1,59 @@
-# Go back to the working Alpine setup and add a fallback mechanism
-FROM n8nio/n8n:latest
+# Use Microsoft Playwright Ubuntu image (arm64) - this has all Playwright browsers pre-installed
+FROM mcr.microsoft.com/playwright:v1.46.0-jammy-arm64
 
-# Switch to root user to install packages
+# Switch to root to install packages
 USER root
 
-# --- KEY FIX: Tell Playwright to use the system's browser ---
-# 1. This prevents pip from trying to download a browser during installation.
-ENV PLAYWRIGHT_BROWSERS_PATH=0
-# 2. This tells Playwright where to find the chromium executable we install via apk.
-ENV PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser
+# 1️⃣ Node – update to supported version and install n8n
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs && \
+    npm install -g n8n
 
-# Update package list and install essential packages.
-# Added nss, freetype, and harfbuzz which are common dependencies for Chromium.
-RUN apk update && apk add --no-cache \
-    python3 \
-    py3-pip \
-    python3-dev \
-    build-base \
-    wget \
-    ca-certificates \
-    # Alpine's native Chromium and dependencies
-    chromium \
-    nss \
-    freetype \
-    harfbuzz \
-    ttf-freefont \
-    font-noto-emoji \
-    && rm -rf /var/cache/apk/*
+# 2️⃣ Python – Nova Act + Playwright
+RUN apt-get update && \
+    apt-get install -y python3 python3-pip && \
+    pip3 install --no-cache-dir nova-act requests && \
+    python3 -m playwright install --with-deps
 
-# Create a Python virtual environment
-RUN python3 -m venv /opt/nova-act-venv
+# 3️⃣ Copy custom node & runner
+COPY python/nova_runner.py /opt/nova_runner.py
 
-# Install Python packages into the virtual environment.
-# Try to install playwright and nova-act with fallbacks
-RUN /opt/nova-act-venv/bin/pip install --upgrade pip && \
-    (/opt/nova-act-venv/bin/pip install playwright || echo "Playwright pip install failed, will use system chromium") && \
-    /opt/nova-act-venv/bin/pip install nova-act
+# 4️⃣ Create a non-root user for n8n first
+RUN useradd -m -s /bin/bash node
 
-# Create symlinks so python3 points to the virtual environment
-RUN ln -sf /opt/nova-act-venv/bin/python3 /usr/local/bin/python3 && \
-    ln -sf /opt/nova-act-venv/bin/pip3 /usr/local/bin/pip3
-
-# Create directory for Nova Act screenshots and logs, and set permissions
-RUN mkdir -p /home/node/nova_logs /home/node/nova_screenshots /home/node/.n8n && \
-    chown -R node:node /home/node/
-
-# Set environment variables for Nova Act and n8n
-# Ensure the venv is in the PATH
-ENV PATH=/opt/nova-act-venv/bin:$PATH
-ENV NOVA_ACT_LOGS_DIR=/home/node/nova_logs
-ENV NOVA_ACT_SCREENSHOTS_DIR=/home/node/nova_screenshots
-ENV N8N_USER_FOLDER=/home/node/.n8n
-
-# Create the nodes directory (this is where the working version was)
+# 5️⃣ Create the correct directory structure for n8n (single .n8n, not nested)
 RUN mkdir -p /home/node/.n8n/nodes/n8n-nodes-amazon-nova-act && \
-    chown -R node:node /home/node/.n8n/nodes
+    chown -R node:node /home/node/.n8n
 
-# Copy the node files directly to n8n's nodes directory with correct structure
+# Copy node files to correct location  
 COPY --chown=node:node package.json /home/node/.n8n/nodes/n8n-nodes-amazon-nova-act/
 COPY --chown=node:node dist/src/ /home/node/.n8n/nodes/n8n-nodes-amazon-nova-act/src/
 COPY --chown=node:node dist/nodes/ /home/node/.n8n/nodes/n8n-nodes-amazon-nova-act/nodes/
 
-# Fix package.json paths to match the deployed structure (dist/src/ -> src/)
+# Fix package.json paths to match deployed structure
 RUN sed -i 's|"dist/src/|"src/|g' /home/node/.n8n/nodes/n8n-nodes-amazon-nova-act/package.json && \
     sed -i 's|"dist/nodes/|"nodes/|g' /home/node/.n8n/nodes/n8n-nodes-amazon-nova-act/package.json
 
-# Install the node using npm (this creates the package-lock.json and links it properly)
+# Install the node package properly as node user
+USER node
 RUN cd /home/node/.n8n/nodes && \
     echo '{"name":"installed-nodes","private":true,"dependencies":{"n8n-nodes-amazon-nova-act":"file:./n8n-nodes-amazon-nova-act"}}' > package.json && \
     npm install
 
-# Switch to the non-root node user for security
-USER node
+# Switch back to root briefly for final setup
+USER root
 
-# Set working directory
+# 6️⃣ Set up environment
+ENV NOVA_ACT_API_KEY=__replace_me__
+ENV NOVA_RUNNER=/opt/nova_runner.py
+ENV NOVA_ACT_SKIP_PLAYWRIGHT_INSTALL=1
+
+# Switch to node user
+USER node
 WORKDIR /home/node
 
 # Expose n8n port
 EXPOSE 5678
 
-# Simple verification
-RUN python3 -c "print('🚀 Python environment ready')" && \
-    ls -la /usr/bin/chromium-browser && \
-    echo "✅ System Chromium available"
-
-# Use the default n8n startup
-# Don't override CMD, use the original from the base image
+# Start n8n with full path
+CMD ["/usr/bin/n8n"]
