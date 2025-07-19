@@ -1,0 +1,9 @@
+# Amazon Nova Act SDK
+nova-act==1.0.4013.0
+
+# Playwright for browser automation (dependency of nova-act)
+playwright==1.52.0
+
+# Additional dependencies that might be needed
+requests>=2.28.0
+typing-extensions>=4.0.0

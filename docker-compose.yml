@@ -1,0 +1,34 @@
+
+services:
+  n8n:
+    build: .
+    container_name: n8n-nova-act
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=admin
+      - N8N_BASIC_AUTH_PASSWORD=password
+      - WEBHOOK_URL=http://localhost:5678/
+      - GENERIC_TIMEZONE=UTC
+      - N8N_LOG_LEVEL=debug
+      - N8N_NODES_INCLUDE=n8n-nodes-amazon-nova-act
+      # Nova Act environment variables
+      - NOVA_ACT_LOGS_DIR=/home/node/nova_logs
+      - NOVA_ACT_SCREENSHOTS_DIR=/home/node/nova_screenshots
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./nova_logs:/home/node/nova_logs
+      - ./nova_screenshots:/home/node/nova_screenshots
+    restart: unless-stopped
+    # Add security options for browser automation
+    security_opt:
+      - seccomp:unconfined
+    # Give container necessary capabilities for browser automation  
+    cap_add:
+      - SYS_ADMIN
+    # Shared memory size for browser processes
+    shm_size: 2gb
+
+volumes:
+  n8n_data:

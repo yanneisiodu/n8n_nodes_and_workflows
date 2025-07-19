@@ -1,48 +1,195 @@
-![Banner image](https://user-images.githubusercontent.com/10284570/173569848-c624317f-42b1-45a6-ab09-f0ea3c247648.png)
+# n8n-nodes-amazon-nova-act
 
-# n8n-nodes-starter
+An n8n community node for Amazon Nova Act - AI-powered browser automation using natural language.
 
-This repo contains example nodes to help you get started building your own custom integrations for [n8n](https://n8n.io). It includes the node linter and other dependencies.
+## Features
 
-To make your custom node available to the community, you must create it as an npm package, and [submit it to the npm registry](https://docs.npmjs.com/packages-and-modules/contributing-packages-to-the-registry).
-
-If you would like your node to be available on n8n cloud you can also [submit your node for verification](https://docs.n8n.io/integrations/creating-nodes/deploy/submit-community-nodes/).
+- **Browser Automation**: Control web browsers using natural language commands
+- **Data Extraction**: Extract structured data from web pages using AI
+- **Headless Support**: Run browsers in headless mode for production environments
+- **Screenshot Capture**: Automatically capture screenshots for debugging and verification
+- **Error Handling**: Robust error handling with detailed feedback
 
 ## Prerequisites
 
-You need the following installed on your development machine:
+- Node.js 20.15 or higher
+- Python 3.10 or higher
+- Docker (recommended for deployment)
+- Amazon Nova Act API key (get it from [nova.amazon.com/act](https://nova.amazon.com/act))
 
-* [git](https://git-scm.com/downloads)
-* Node.js and npm. Minimum version Node 20. You can find instructions on how to install both using nvm (Node Version Manager) for Linux, Mac, and WSL [here](https://github.com/nvm-sh/nvm). For Windows users, refer to Microsoft's guide to [Install NodeJS on Windows](https://docs.microsoft.com/en-us/windows/dev-environment/javascript/nodejs-on-windows).
-* Install n8n with:
-  ```
-  npm install n8n -g
-  ```
-* Recommended: follow n8n's guide to [set up your development environment](https://docs.n8n.io/integrations/creating-nodes/build/node-development-environment/).
+## Installation
 
-## Using this starter
+### Development Setup
 
-These are the basic steps for working with the starter. For detailed guidance on creating and publishing nodes, refer to the [documentation](https://docs.n8n.io/integrations/creating-nodes/).
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/n8n-nodes-amazon-nova-act.git
+cd n8n-nodes-amazon-nova-act
+```
 
-1. [Generate a new repository](https://github.com/n8n-io/n8n-nodes-starter/generate) from this template repository.
-2. Clone your new repo:
-   ```
-   git clone https://github.com/<your organization>/<your-repo-name>.git
-   ```
-3. Run `npm i` to install dependencies.
-4. Open the project in your editor.
-5. Browse the examples in `/nodes` and `/credentials`. Modify the examples, or replace them with your own nodes.
-6. Update the `package.json` to match your details.
-7. Run `npm run lint` to check for errors or `npm run lintfix` to automatically fix errors when possible.
-8. Test your node locally. Refer to [Run your node locally](https://docs.n8n.io/integrations/creating-nodes/test/run-node-locally/) for guidance.
-9. Replace this README with documentation for your node. Use the [README_TEMPLATE](README_TEMPLATE.md) to get started.
-10. Update the LICENSE file to use your details.
-11. [Publish](https://docs.npmjs.com/packages-and-modules/contributing-packages-to-the-registry) your package to npm.
+2. Install Node.js dependencies:
+```bash
+npm install
+```
 
-## More information
+3. Build the node:
+```bash
+npm run build
+```
 
-Refer to our [documentation on creating nodes](https://docs.n8n.io/integrations/creating-nodes/) for detailed information on building your own nodes.
+4. Link the package for local development:
+```bash
+npm link
+```
+
+5. In your n8n installation directory, link the custom node:
+```bash
+npm link n8n-nodes-amazon-nova-act
+```
+
+### Docker Setup (Recommended)
+
+1. Build and run with Docker Compose:
+```bash
+docker-compose up --build -d
+```
+
+2. Access n8n at `http://localhost:5678`
+   - Username: `admin`
+   - Password: `password`
+
+## Configuration
+
+### API Credentials
+
+1. Go to [nova.amazon.com/act](https://nova.amazon.com/act) to get your API key
+2. In n8n, create a new "Amazon Nova Act API" credential
+3. Enter your API key
+
+### Node Options
+
+- **Starting URL**: Optional URL to start the browser session
+- **Headless Mode**: Run browser without visible UI (recommended for production)
+- **Session Timeout**: Maximum time to wait for automation completion
+- **Commands**: Natural language commands to execute (for Perform Actions)
+- **Data Schema**: JSON schema for data extraction (for Extract Data operation)
+- **Navigation Commands**: Commands to navigate before extracting data
+
+## Usage Examples
+
+### Perform Browser Actions
+
+```
+Commands:
+Go to https://example.com
+Click the "Sign up" button
+Fill in the email field with "test@example.com"
+Fill in the password field with "securepassword"
+Click the "Create Account" button
+Take a screenshot
+```
+
+### Extract Structured Data
+
+```
+Starting URL: https://news.ycombinator.com
+Data Schema:
+{
+  "stories": [
+    {
+      "title": "string",
+      "points": "number",
+      "comments": "number",
+      "url": "string"
+    }
+  ]
+}
+Navigation Commands:
+Scroll down to load more stories
+Wait for the page to fully load
+```
+
+## Best Practices
+
+1. **Break Down Complex Tasks**: Split complex automation into smaller, specific commands
+2. **Use Descriptive Commands**: Be specific about what elements to interact with
+3. **Handle Errors Gracefully**: Enable "Continue on Fail" for workflows that might encounter errors
+4. **Test in Non-Headless Mode**: Turn off headless mode during development to see what's happening
+5. **Secure API Keys**: Always use n8n credentials to store your Nova Act API key securely
+
+## Limitations
+
+- Amazon Nova Act is currently in research preview
+- Available only in the US region
+- Rate limits may apply based on your API plan
+- Complex JavaScript interactions might not work reliably
+- Performance may vary depending on website complexity
+
+## Troubleshooting
+
+### Common Issues
+
+1. **"nova-act package not installed"**
+   - Ensure Python dependencies are installed: `pip install -r requirements.txt`
+
+2. **"API key invalid"**
+   - Verify your API key at nova.amazon.com/act
+   - Ensure the credential is properly configured in n8n
+
+3. **Browser automation fails**
+   - Try running in non-headless mode for debugging
+   - Check if the website has anti-bot protection
+   - Ensure commands are specific and clear
+
+4. **Timeout errors**
+   - Increase the session timeout value
+   - Break down complex tasks into smaller steps
+
+### Logs and Debugging
+
+- Screenshots are saved to `/home/node/nova_screenshots` in the Docker container
+- Logs are available in `/home/node/nova_logs`
+- Enable debug mode by setting environment variable: `N8N_LOG_LEVEL=debug`
+
+## Development
+
+### Building
+
+```bash
+npm run build
+```
+
+### Linting
+
+```bash
+npm run lint
+npm run lintfix  # Auto-fix issues
+```
+
+### Formatting
+
+```bash
+npm run format
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
 ## License
 
-[MIT](https://github.com/n8n-io/n8n-nodes-starter/blob/master/LICENSE.md)
+MIT License - see [LICENSE](LICENSE) file for details.
+
+## Support
+
+- [Amazon Nova Act Documentation](https://nova.amazon.com/act)
+- [n8n Community Forum](https://community.n8n.io/)
+- [GitHub Issues](https://github.com/yourusername/n8n-nodes-amazon-nova-act/issues)
+
+## Disclaimer
+
+This is an unofficial community node for Amazon Nova Act. It is not affiliated with or endorsed by Amazon. Amazon Nova Act is a research preview service and should be used accordingly.

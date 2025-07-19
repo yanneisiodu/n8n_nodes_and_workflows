@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60" width="60" height="60">
+  <!-- Background circle -->
+  <circle cx="30" cy="30" r="28" fill="#FF9900" stroke="#232F3E" stroke-width="2"/>
+  
+  <!-- Browser window -->
+  <rect x="12" y="18" width="36" height="24" rx="2" fill="#FFFFFF" stroke="#232F3E" stroke-width="1"/>
+  
+  <!-- Browser toolbar -->
+  <rect x="12" y="18" width="36" height="6" rx="2" fill="#E8E8E8"/>
+  
+  <!-- Browser dots -->
+  <circle cx="16" cy="21" r="1" fill="#FF5F56"/>
+  <circle cx="20" cy="21" r="1" fill="#FFBD2E"/>
+  <circle cx="24" cy="21" r="1" fill="#27CA3F"/>
+  
+  <!-- AI/automation symbol (lightning bolt) -->
+  <path d="M26 28 L22 35 L26 35 L24 40 L34 30 L30 30 L32 25 Z" fill="#FF9900"/>
+  
+  <!-- Small connecting lines to show automation -->
+  <line x1="18" y1="32" x2="22" y2="32" stroke="#232F3E" stroke-width="1"/>
+  <line x1="38" y1="32" x2="42" y2="32" stroke="#232F3E" stroke-width="1"/>
+  <line x1="30" y1="45" x2="30" y2="48" stroke="#232F3E" stroke-width="1"/>
+</svg>

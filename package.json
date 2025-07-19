@@ -1,31 +1,43 @@
 {
-  "name": "n8n-nodes-<...>",
+  "name": "n8n-nodes-amazon-nova-act",
   "version": "0.1.0",
-  "description": "",
+  "description": "An n8n node to control a browser using Amazon Nova Act AI agent",
   "keywords": [
-    "n8n-community-node-package"
+    "n8n-community-node-package",
+    "n8n",
+    "amazon",
+    "nova",
+    "act",
+    "browser-automation",
+    "ai-agent",
+    "web-scraping"
   ],
   "license": "MIT",
-  "homepage": "",
+  "homepage": "https://github.com/yourusername/n8n-nodes-amazon-nova-act",
   "author": {
-    "name": "",
-    "email": ""
+    "name": "Your Name",
+    "email": "your.email@example.com"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/<...>/n8n-nodes-<...>.git"
+    "url": "https://github.com/yourusername/n8n-nodes-amazon-nova-act.git"
   },
   "engines": {
     "node": ">=20.15"
   },
   "main": "index.js",
   "scripts": {
-    "build": "npx rimraf dist && tsc && gulp build:icons",
+    "build": "npx rimraf dist && tsc && gulp build:assets",
     "dev": "tsc --watch",
-    "format": "prettier nodes credentials --write",
-    "lint": "eslint nodes credentials package.json",
-    "lintfix": "eslint nodes credentials package.json --fix",
-    "prepublishOnly": "npm run build && npm run lint -c .eslintrc.prepublish.js nodes credentials package.json"
+    "format": "prettier src --write",
+    "lint": "eslint src package.json",
+    "lintfix": "eslint src package.json --fix",
+    "test": "./test_node.sh",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "prepublishOnly": "npm run build && npm run lint -c .eslintrc.prepublish.js src package.json"
   },
   "files": [
     "dist"
@@ -33,15 +45,14 @@
   "n8n": {
     "n8nNodesApiVersion": 1,
     "credentials": [
-      "dist/credentials/ExampleCredentialsApi.credentials.js",
-      "dist/credentials/HttpBinApi.credentials.js"
+      "dist/src/credentials/NovaActApi.credentials.js"
     ],
     "nodes": [
-      "dist/nodes/ExampleNode/ExampleNode.node.js",
-      "dist/nodes/HttpBin/HttpBin.node.js"
+      "dist/src/nodes/NovaAct/NovaAct.node.js"
     ]
   },
   "devDependencies": {
+    "@types/node": "^24.0.15",
     "@typescript-eslint/parser": "~8.32.0",
     "eslint": "^8.57.0",
     "eslint-plugin-n8n-nodes-base": "^1.16.3",
@@ -50,6 +61,9 @@
     "typescript": "^5.8.2"
   },
   "peerDependencies": {
+    "n8n-workflow": "*"
+  },
+  "dependencies": {
     "n8n-workflow": "*"
   }
 }
