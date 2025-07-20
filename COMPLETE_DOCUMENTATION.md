@@ -887,3 +887,243 @@ docker run -d --name n8n_nova \
 - Node should perform REAL browser automation (not simulation)
 
 **Final Status**: The Amazon Nova Act node is now visible and functional in n8n with REAL browser automation! 🚀
+
+---
+
+## MAJOR UPDATE: July 19, 2025 - ENHANCED OUTPUT & OPERATION MODES
+
+### Revolutionary Enhancement: Intelligent Data Extraction & Screenshot Capture
+
+After achieving the basic functionality breakthrough, we implemented a comprehensive enhancement that transforms the Nova Act node from simple automation to a full browser intelligence platform.
+
+### ✅ **Core Enhancements Implemented:**
+
+#### 1. **Operation Mode Selection**
+The node now supports **3 distinct operation modes**:
+
+- **"Perform Actions"**: Pure browser automation (clicking, typing, navigating)
+  - Uses `nova.act()` method
+  - Perfect for automation tasks without data extraction
+  - Returns execution metadata and progress logs
+
+- **"Extract Data"**: Structured data extraction with JSON schemas  
+  - Uses `nova.extract()` method with schema validation
+  - Auto-generates schemas when none provided
+  - Returns structured JSON data matching schema
+
+- **"Action + Extract"**: Combined workflow - perform actions then extract data
+  - Executes `nova.act()` followed by `nova.extract()`
+  - Ideal for search-then-extract workflows
+  - Returns both action results and extracted data
+
+#### 2. **Smart Schema Auto-Generation**
+When no schema is provided, the system intelligently generates schemas based on:
+
+**E-commerce Patterns (Amazon, shopping sites):**
+```json
+{
+  "products": [
+    {
+      "title": "string",
+      "price": "string", 
+      "rating": "number",
+      "reviews_count": "string",
+      "availability": "string",
+      "image_url": "string"
+    }
+  ]
+}
+```
+
+**Search Results:**
+```json
+{
+  "results": [
+    {
+      "title": "string",
+      "url": "string",
+      "description": "string"
+    }
+  ]
+}
+```
+
+**News/Articles:**
+```json
+{
+  "articles": [
+    {
+      "headline": "string",
+      "summary": "string",
+      "author": "string",
+      "date": "string",
+      "url": "string"
+    }
+  ]
+}
+```
+
+#### 3. **Advanced Screenshot Capture**
+- **Intelligent Detection**: Automatically detects screenshot requests in prompts using keywords like "screenshot", "capture", "take a picture", "snap", "image"
+- **Playwright Integration**: Uses Playwright for high-quality full-page screenshots when Nova Act session is active
+- **Base64 Encoding**: Screenshots returned as data URLs for direct display in n8n
+- **Contextual Information**: Includes page title, URL, timestamp, and screenshot type
+
+#### 4. **Comprehensive Output Structure**
+```json
+{
+  "success": true,
+  "operation_type": "action_extract",
+  "execution_time_seconds": 45.2,
+  "timestamp": "2025-07-19T19:27:15.123Z",
+  "prompt": "Search for laptops",
+  "url": "https://www.amazon.com",
+  
+  // Data Extraction Results
+  "parsed_response": {...},        // Structured extracted data
+  "response": {...},              // Raw Nova Act response
+  "matches_schema": true,         // Schema validation result
+  "valid_json": true,            // JSON validation status
+  "metadata": "ActMetadata(...)", // Session details
+  
+  // Visual Documentation
+  "screenshots": [
+    {
+      "type": "full_page",
+      "description": "After execution",
+      "timestamp": "2025-07-19T19:27:15.123Z",
+      "data": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA...",
+      "page_title": "Amazon.com: laptops",
+      "url": "https://www.amazon.com/s?k=laptops"
+    }
+  ],
+  
+  // Execution Intelligence
+  "execution_logs": [
+    "[2025-07-19T19:27:11.000Z] Starting Nova Act execution",
+    "[2025-07-19T19:27:12.000Z] Configuration: operation=extract, URL=https://www.amazon.com",
+    "[2025-07-19T19:27:13.000Z] Auto-generated schema for product extraction",
+    "[2025-07-19T19:27:14.000Z] Browser session started successfully",
+    "[2025-07-19T19:27:15.000Z] Data extraction completed"
+  ],
+  
+  // Debug Information
+  "available_attributes": ["matches_schema", "metadata", "parsed_response", "response", "valid_json"],
+  "raw_result": "ActResult(...)"
+}
+```
+
+#### 5. **Enhanced Configuration Options**
+New **Options** section in n8n node with:
+- **Capture Screenshots**: Enable/disable screenshot collection
+- **Detailed Logging**: Control execution log verbosity  
+- **Include Stack Trace on Error**: Full error debugging support
+
+### 🔧 **Technical Implementation Details:**
+
+#### Python Script Enhancements (`nova_runner.py`):
+- **Operation Detection**: Handles different operation types with appropriate Nova Act methods
+- **Screenshot Integration**: Playwright-based screenshot capture with base64 encoding
+- **Schema Auto-Generation**: Intelligent schema creation based on prompt analysis
+- **Comprehensive Logging**: Timestamped execution tracking with performance metrics
+- **Error Handling**: Detailed error reporting with stack traces and context
+
+#### TypeScript Node Enhancements (`NovaAct.node.ts`):
+- **Operation Selection UI**: Dropdown for choosing operation mode
+- **Conditional Schema Field**: Shows/hides schema input based on operation type
+- **Enhanced Options Panel**: Configurable output preferences
+- **Payload Enrichment**: Passes operation type and options to Python script
+
+### 📊 **Performance & Capabilities:**
+
+#### Working Features:
+✅ **Real Nova Act SDK Integration** (version 1.0.4013.0)  
+✅ **Three Operation Modes** with intelligent method selection  
+✅ **Auto-Schema Generation** for common website patterns  
+✅ **High-Quality Screenshots** with Playwright integration  
+✅ **Comprehensive Logging** with timestamped execution tracking  
+✅ **Error Transparency** with detailed debugging information  
+✅ **Flexible Configuration** with user-controlled output options  
+
+#### Discovered Limitations:
+⚠️ **Nova Act Step Limit**: Maximum 30 steps per execution session  
+⚠️ **Complex Prompt Constraints**: Multi-part prompts can exceed step limits  
+⚠️ **Execution Time**: Complex operations can take 5+ minutes  
+
+### 🎯 **Usage Examples:**
+
+#### Data Extraction with Auto-Schema:
+```
+Operation: Extract Data
+Prompt: "Find laptops under $500"
+URL: https://www.amazon.com
+Schema: [Leave empty for auto-generation]
+```
+
+#### Combined Action + Extraction:
+```
+Operation: Action + Extract
+Prompt: "Search for coffee makers"
+URL: https://www.amazon.com
+Schema: {"products": [{"title": "string", "price": "string"}]}
+```
+
+#### Screenshot Capture:
+```
+Operation: Perform Actions
+Prompt: "Navigate to electronics section and take a screenshot"
+URL: https://www.amazon.com
+Options: ✅ Capture Screenshots, ✅ Detailed Logging
+```
+
+### 🚀 **Enhanced Node Status:**
+
+The Nova Act node is now a **comprehensive browser intelligence platform** that provides:
+- **Structured data extraction** with intelligent schema generation
+- **Visual documentation** through automated screenshot capture
+- **Detailed operational insights** with execution logging and performance metrics
+- **Flexible operation modes** for different automation needs
+- **Professional error handling** with debugging capabilities
+
+This represents a major evolution from basic browser automation to a full-featured web intelligence tool suitable for production workflows.
+
+**Access the enhanced node at:** http://localhost:5678
+
+### 🔍 **Nova Act SDK Limitations Discovered:**
+
+Through extensive testing, we've identified key operational constraints:
+
+1. **Step Limit**: Nova Act has a hard limit of **30 steps per execution**
+2. **Complex Prompts**: Multi-part requests (search + filter + screenshot) can exceed limits
+3. **Execution Time**: Complex operations can take 5+ minutes before hitting step limits
+4. **Optimization Required**: Prompts should be simple and focused for best results
+
+**Recommended Prompt Patterns:**
+- ✅ "Search for laptops under $500"
+- ✅ "Find coffee products"  
+- ❌ "Search for laptops and take a screenshot of the top 5 under $500"
+
+### 🔬 **Critical Discovery: Python Version Impact**
+
+**Issue Identified**: HumanValidationError occurs in Docker (Python 3.10.12) but NOT in local environment (Python 3.13.4)
+
+**Test Results:**
+- **Local Python 3.13.4**: Same Google search works perfectly ✅
+- **Docker Python 3.10.12**: Gets HumanValidationError ❌
+- **Same Nova Act version**: 1.0.4013.0 in both environments
+- **Same API key**: Identical configuration
+
+**Root Cause**: Nova Act SDK has different behavior/bot detection handling between Python versions:
+- **Python 3.13**: Better integration with Nova Act's internal mechanisms
+- **Python 3.10**: May trigger additional security checks in Google's bot detection
+
+**Solution Path**: Update Docker container to use Python 3.13 to match the working local environment.
+
+**Alternative Workaround**: 
+Until Python 3.13 container is ready, use more automation-friendly websites:
+- ✅ **Amazon.com** (more bot-friendly for browsing)
+- ✅ **News sites** (generally accessible)  
+- ✅ **Wikipedia** (open access)
+- ❌ **Google.com** (aggressive bot detection)
+
+---

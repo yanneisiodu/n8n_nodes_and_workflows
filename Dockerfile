@@ -1,19 +1,25 @@
-# Use Microsoft Playwright Ubuntu image (arm64) - this has all Playwright browsers pre-installed
-FROM mcr.microsoft.com/playwright:v1.46.0-jammy-arm64
+# Use Python 3.13 base image and add Playwright manually
+FROM python:3.13-slim
 
 # Switch to root to install packages
 USER root
 
-# 1️⃣ Node – update to supported version and install n8n
+# Install system dependencies
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    curl wget gnupg2 software-properties-common \
+    build-essential libnss3 libxss1 libasound2 libatk-bridge2.0-0 \
+    libdrm2 libxcomposite1 libxdamage1 libxrandr2 libgbm1 libgtk-3-0 && \
+    rm -rf /var/lib/apt/lists/*
+
+# 1️⃣ Node.js + n8n
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
     apt-get install -y nodejs && \
     npm install -g n8n
 
-# 2️⃣ Python – Nova Act + Playwright
-RUN apt-get update && \
-    apt-get install -y python3 python3-pip && \
-    pip3 install --no-cache-dir nova-act requests && \
-    python3 -m playwright install --with-deps
+# 2️⃣ Python packages (Nova Act + Playwright)
+RUN pip install --no-cache-dir nova-act requests playwright && \
+    playwright install-deps chromium
 
 # 3️⃣ Copy custom node & runner
 COPY python/nova_runner.py /opt/nova_runner.py
@@ -48,9 +54,12 @@ ENV NOVA_ACT_API_KEY=__replace_me__
 ENV NOVA_RUNNER=/opt/nova_runner.py
 ENV NOVA_ACT_SKIP_PLAYWRIGHT_INSTALL=1
 
-# Switch to node user
+# Switch to node user and install Playwright browsers as node user
 USER node
 WORKDIR /home/node
+
+# Install Playwright browsers for the node user
+RUN playwright install chromium
 
 # Expose n8n port
 EXPOSE 5678
